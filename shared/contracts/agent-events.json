@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentEvent",
+  "description": "Normalized agent event streamed to the chat UI. Mirror in backend pydantic (app/domain/chat.py) and frontend TS (lib/types.ts).",
+  "type": "object",
+  "required": ["type", "ts"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["thinking", "tool_call", "tool_result", "message"]
+    },
+    "data": {
+      "description": "Type-specific payload. thinking: {text}. tool_call: {name, args}. tool_result: {name, result}. message: {text}.",
+      "type": ["object", "string", "null"]
+    },
+    "ts": { "type": "string", "format": "date-time" },
+    "session_id": { "type": "string" }
+  }
+}

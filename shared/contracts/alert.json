@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Alert",
+  "description": "A proactive blind-spot alert shown in the Alert Feed.",
+  "type": "object",
+  "required": ["id", "severity", "title", "detail", "source", "created_at"],
+  "properties": {
+    "id": { "type": "string" },
+    "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+    "title": { "type": "string" },
+    "detail": { "type": "string" },
+    "source": {
+      "type": "string",
+      "enum": ["github", "jira", "calendar", "pagerduty", "cross"]
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Supporting rows (PRs, tickets, meetings, incidents) the alert is based on"
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

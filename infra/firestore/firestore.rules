@@ -1,0 +1,12 @@
+rules_version = '2';
+// Firestore security rules (skeleton).
+// TODO: lock down to authenticated users; for the demo this allows read of app state.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // connectors, alerts, chat_sessions, agent_runs
+    match /{document=**} {
+      allow read: if true;       // TODO: restrict
+      allow write: if false;     // writes happen via the backend service account only
+    }
+  }
+}
