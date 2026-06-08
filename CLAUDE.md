@@ -4,7 +4,7 @@ This file orients any Claude Code session working in this repo. Keep it current 
 
 ## What this is
 
-**Sprint Mirror / DevLens** — a developer-productivity agent for the **Google Cloud Rapid Agent
+**DevLens** — a developer-productivity agent for the **Google Cloud Rapid Agent
 Hackathon (Fivetran track)**, due **2026-06-11 @ 2:00pm PDT**.
 
 A Gemini 3 agent (Google ADK / Agent Builder) works over team data that **Fivetran** syncs into
@@ -72,8 +72,9 @@ docs/              architecture, data-model, mcp-integration, demo-script
 
 ## Git conventions
 
-- **Commit author/committer:** `Parth Gala <parthpgala@gmail.com>` (set in this repo's local git
-  config). Use these credentials for every commit.
+- **Commit under your own git identity.** Each contributor sets their own `user.name` / `user.email`
+  via *local* git config (`git config user.email "you@example.com"`) — never hardcode anyone's personal
+  email in committed files. (Personal overrides can go in the gitignored `CLAUDE.local.md`.)
 - **Do NOT add a `Co-Authored-By: Claude ...` trailer** (or any AI co-author line) to commit messages.
 
 ## Common commands

@@ -1,4 +1,4 @@
-# Architecture — Sprint Mirror / DevLens
+# Architecture — DevLens
 
 ## Problem
 Two recurring frictions on engineering teams:

@@ -5,7 +5,7 @@
 export default function DashboardPage() {
   return (
     <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-semibold">Sprint Mirror / DevLens</h1>
+      <h1 className="text-2xl font-semibold">DevLens</h1>
       <p className="text-sm text-gray-500">Developer Productivity Blind Spot Agent</p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

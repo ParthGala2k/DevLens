@@ -1,1 +1,1 @@
-"""Sprint Mirror / DevLens backend application package."""
+"""DevLens backend application package."""

@@ -1,4 +1,4 @@
-# Sprint Mirror / DevLens
+# DevLens
 
 > **Developer Productivity Agent** — built for the **Google Cloud Rapid Agent Hackathon (Fivetran track)**.
 

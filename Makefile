@@ -1,4 +1,4 @@
-# Sprint Mirror / DevLens — developer shortcuts
+# DevLens — developer shortcuts
 # Note: targets are placeholders for the skeleton; wire up as phases land.
 
 .PHONY: help dev backend frontend test lint deploy bq-views

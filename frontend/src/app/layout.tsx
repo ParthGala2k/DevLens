@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sprint Mirror / DevLens",
+  title: "DevLens",
   description: "Developer Productivity Blind Spot Agent",
 };
 
