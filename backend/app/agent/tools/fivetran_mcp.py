@@ -5,7 +5,7 @@ activity tap, so invocations show up in the live MCP Activity Log automatically.
 """
 
 # def sync_connector(connector: str) -> dict:
-#     """Trigger a Fivetran sync for the given connector and return status."""
+#     """Trigger a Fivetran sync for a connector (gitlab|jira|slack|calendar|pagerduty)."""
 #     ...
 
 # def connector_status(connector: str) -> dict:

@@ -12,15 +12,17 @@ export default function DashboardPage() {
         <section className="lg:col-span-2 space-y-6">
           {/* <DataSyncPanel /> */}
           {/* <SprintHealthDashboard /> */}
+          {/* <WorkloadHeatmap /> <ReliabilityTable />  — developer observability */}
+          {/* <ProposalQueue />  — discussion→repo bridge approval queue */}
           {/* <AlertFeed /> */}
           <div className="rounded border border-dashed p-8 text-center text-gray-400">
-            Data Sync + Sprint Health + Alert Feed go here
+            Data Sync + Sprint Health + Team Observability + Proposal Queue + Alert Feed go here
           </div>
         </section>
         <aside>
-          {/* <McpActivityLog />  — judge-visible live MCP calls */}
+          {/* <McpActivityLog />  — judge-visible live MCP calls (Fivetran + GitLab) */}
           <div className="rounded border border-dashed p-8 text-center text-gray-400">
-            MCP Activity Log
+            MCP Activity Log (Fivetran + GitLab)
           </div>
         </aside>
       </div>

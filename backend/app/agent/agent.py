@@ -6,7 +6,9 @@ ultimately call `services/` and `integrations/`.
 
 # from google.adk.agents import Agent
 # from app.config import settings
-# from app.agent.tools import bigquery_tools, fivetran_mcp, analysis_tools
+# from app.agent.tools import (
+#     bigquery_tools, fivetran_mcp, gitlab_mcp, bridge_tools, analysis_tools,
+# )
 
 
 def build_agent():
@@ -17,7 +19,13 @@ def build_agent():
           name="devlens",
           model=settings.gemini_model,
           instruction=<system prompt from prompts/>,
-          tools=[*bigquery_tools.TOOLS, *fivetran_mcp.TOOLS, *analysis_tools.TOOLS],
+          tools=[
+              *bigquery_tools.TOOLS,   # query metrics / observability views
+              *fivetran_mcp.TOOLS,     # sync layer
+              *gitlab_mcp.TOOLS,       # action layer (file issues)
+              *bridge_tools.TOOLS,     # discussion -> proposed issue
+              *analysis_tools.TOOLS,
+          ],
       )
       return root_agent
     """

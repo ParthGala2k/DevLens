@@ -7,6 +7,6 @@
 #     severity: str          # info | warning | critical
 #     title: str
 #     detail: str
-#     source: str            # github | jira | calendar | pagerduty | cross
+#     source: str            # gitlab | jira | slack | calendar | pagerduty | cross
 #     evidence: list[dict]
 #     created_at: str

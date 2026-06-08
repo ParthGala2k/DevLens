@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IssueProposal",
+  "description": "A GitLab issue drafted by the agent from a discussion thread, awaiting human approval before it is filed via the GitLab MCP server.",
+  "type": "object",
+  "required": ["id", "status", "source", "source_ref", "title", "description", "created_at"],
+  "properties": {
+    "id": { "type": "string" },
+    "status": { "type": "string", "enum": ["pending", "filed", "dismissed"] },
+    "source": { "type": "string", "enum": ["slack", "jira"] },
+    "source_ref": {
+      "type": "object",
+      "description": "Pointer back to the originating discussion",
+      "properties": {
+        "id": { "type": "string" },
+        "permalink": { "type": "string" }
+      }
+    },
+    "title": { "type": "string", "description": "Drafted issue title" },
+    "description": { "type": "string", "description": "Drafted issue body" },
+    "labels": { "type": "array", "items": { "type": "string" } },
+    "suggested_assignee": { "type": ["string", "null"] },
+    "confidence": { "type": "number", "description": "Agent confidence the thread is actionable (0-1)" },
+    "gitlab_issue_url": { "type": ["string", "null"], "description": "Set once filed" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -5,11 +5,11 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
-@router.get("/pr-review-lag")
-async def pr_review_lag():
-    """Which PRs are stuck, how long, and who's the bottleneck.
+@router.get("/mr-review-lag")
+async def mr_review_lag():
+    """Which GitLab merge requests are stuck, how long, and who's the bottleneck.
 
-    TODO: MetricsService.pr_review_lag() -> queries BigQuery view `pr_review_lag`.
+    TODO: MetricsService.mr_review_lag() -> queries BigQuery view `mr_review_lag`.
     """
     raise NotImplementedError
 

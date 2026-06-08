@@ -18,10 +18,11 @@ class Settings(BaseSettings):
     google_genai_use_vertexai: bool = True
     gemini_model: str = "gemini-3-pro"
 
-    # --- BigQuery ---
+    # --- BigQuery (Fivetran sync target) ---
     bigquery_project: str = ""
-    bigquery_dataset_github: str = "github"
+    bigquery_dataset_gitlab: str = "gitlab"
     bigquery_dataset_jira: str = "jira"
+    bigquery_dataset_slack: str = "slack"
     bigquery_dataset_calendar: str = "calendar"
     bigquery_dataset_pagerduty: str = "pagerduty"
     bigquery_dataset_metrics: str = "devlens_metrics"
@@ -30,11 +31,16 @@ class Settings(BaseSettings):
     firestore_project: str = ""
     firestore_database: str = "(default)"
 
-    # --- Fivetran MCP ---
+    # --- Fivetran MCP (sync layer — mandatory track integration) ---
     fivetran_mcp_url: str = ""
     fivetran_api_key: str = ""
     fivetran_api_secret: str = ""
     fivetran_group_id: str = ""
+
+    # --- GitLab MCP (action layer — create/assign/label issues) ---
+    gitlab_mcp_url: str = ""
+    gitlab_token: str = ""
+    gitlab_project_id: str = ""
 
     # --- Server ---
     backend_host: str = "0.0.0.0"

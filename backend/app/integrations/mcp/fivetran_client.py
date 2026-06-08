@@ -11,4 +11,5 @@ the live MCP Activity Log.
 
 
 class FivetranMcpClient:
-    """TODO: wrap McpSession against settings.fivetran_mcp_url; decorate calls with tap()."""
+    """TODO: wrap McpSession against settings.fivetran_mcp_url; decorate calls with
+    tap(action, server="fivetran", connector=...)."""

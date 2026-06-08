@@ -1,15 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "McpEvent",
-  "description": "A single Fivetran MCP call as shown in the live MCP Activity Log.",
+  "description": "A single MCP call (Fivetran or GitLab) as shown in the live MCP Activity Log.",
   "type": "object",
-  "required": ["action", "status", "ts"],
+  "required": ["server", "action", "status", "ts"],
   "properties": {
+    "server": { "type": "string", "enum": ["fivetran", "gitlab"] },
     "connector": {
       "type": ["string", "null"],
-      "enum": ["github", "jira", "calendar", "pagerduty", null]
+      "enum": ["gitlab", "jira", "slack", "calendar", "pagerduty", null]
     },
-    "action": { "type": "string", "description": "MCP tool name, e.g. sync_connector" },
+    "action": { "type": "string", "description": "MCP tool name, e.g. sync_connector or create_issue" },
     "status": { "type": "string", "enum": ["start", "success", "error"] },
     "ts": { "type": "string", "format": "date-time" },
     "payload": { "description": "Optional request/response detail" }

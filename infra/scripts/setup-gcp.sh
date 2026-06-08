@@ -16,4 +16,5 @@ gcloud services enable \
 # Metrics dataset for derived views
 bq --location="${GOOGLE_CLOUD_LOCATION:-US}" mk -d "${BIGQUERY_DATASET_METRICS:-devlens_metrics}" || true
 
-echo "Done. Next: configure Fivetran connectors -> BigQuery, then 'make bq-views'."
+echo "Done. Next: configure Fivetran connectors (gitlab/jira/slack/calendar/pagerduty) -> BigQuery,"
+echo "      set GitLab MCP vars in .env, then 'make bq-views'."

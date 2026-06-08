@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Workload",
+  "description": "Developer observability shapes: load (for the heatmap) and reliability (for the table).",
+  "type": "object",
+  "properties": {
+    "load": {
+      "type": "object",
+      "required": ["developer", "load_score"],
+      "properties": {
+        "developer": { "type": "string" },
+        "open_issues": { "type": "integer" },
+        "story_points_in_flight": { "type": "number" },
+        "mrs_awaiting_review": { "type": "integer" },
+        "on_call": { "type": "boolean" },
+        "meeting_hours": { "type": "number" },
+        "load_score": { "type": "number", "description": "Composite score for the heatmap" }
+      }
+    },
+    "reliability": {
+      "type": "object",
+      "required": ["developer", "sprint", "completion_ratio"],
+      "properties": {
+        "developer": { "type": "string" },
+        "sprint": { "type": "string" },
+        "assigned": { "type": "integer" },
+        "completed": { "type": "integer" },
+        "completion_ratio": { "type": "number" },
+        "avg_cycle_time_days": { "type": "number" },
+        "on_time_ratio": { "type": "number" },
+        "churn": { "type": "integer" }
+      }
+    }
+  }
+}

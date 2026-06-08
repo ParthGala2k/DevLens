@@ -5,9 +5,10 @@ schema). Tools delegate to MetricsService / BigQueryClient — they do not embed
 their own beyond referencing the derived views.
 """
 
-# def query_pr_review_lag(sprint: str | None = None) -> list[dict]:
-#     """Return stuck PRs and their review wait times. ..."""
+# def query_mr_review_lag(sprint: str | None = None) -> list[dict]:
+#     """Return stuck GitLab MRs and their review wait times. ..."""
 #     ...
 
-# TOOLS = [query_pr_review_lag, query_deep_work, query_estimation_accuracy]
+# TOOLS = [query_mr_review_lag, query_deep_work, query_estimation_accuracy,
+#          query_developer_load, query_completion_reliability]
 TOOLS: list = []  # TODO: populate with tool functions

@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import alerts, chat, connectors, dashboard, mcp_log
+from app.api.routes import alerts, bridge, chat, connectors, dashboard, mcp_log, team
 from app.config import settings
 
 
@@ -33,6 +33,8 @@ def create_app() -> FastAPI:
 
     app.include_router(connectors.router)
     app.include_router(dashboard.router)
+    app.include_router(team.router)
+    app.include_router(bridge.router)
     app.include_router(alerts.router)
     app.include_router(chat.router)
     app.include_router(mcp_log.router)
