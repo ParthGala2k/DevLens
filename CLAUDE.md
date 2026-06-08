@@ -70,6 +70,12 @@ docs/              architecture, data-model, mcp-integration, demo-script
 - **Secrets:** never hardcode. Config comes from env via `backend/app/config.py` (pydantic-settings).
   See `.env.example` for the full list of variables.
 
+## Git conventions
+
+- **Commit author/committer:** `Parth Gala <parthpgala@gmail.com>` (set in this repo's local git
+  config). Use these credentials for every commit.
+- **Do NOT add a `Co-Authored-By: Claude ...` trailer** (or any AI co-author line) to commit messages.
+
 ## Common commands
 
 ```bash
