@@ -52,7 +52,7 @@ frontend/src/
   lib/             api-client, sse, types
 shared/contracts/  JSON schemas shared by backend (pydantic) + frontend (TS)
 infra/             bigquery/ (DDL + metric views), firestore/, cloudrun/, scripts/
-docs/              architecture, data-model, mcp-integration, demo-script
+docs/              architecture, data-model, data-pipeline (bring-up runbook), mcp-integration, demo-script
 ```
 
 ## Architectural conventions
