@@ -5,12 +5,16 @@ directly elsewhere — import `settings` from here so config stays centralized a
 """
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Resolve .env from repo root regardless of where uvicorn/pytest is launched from.
+_ROOT_ENV = str(Path(__file__).parents[2] / ".env")
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=[_ROOT_ENV, ".env"], extra="ignore")
 
     # --- Google Cloud / Gemini ---
     google_cloud_project: str = ""
@@ -20,7 +24,7 @@ class Settings(BaseSettings):
 
     # --- BigQuery (Fivetran sync target) ---
     bigquery_project: str = ""
-    bigquery_dataset_gitlab: str = "gitlab"
+    bigquery_dataset_github: str = "github"
     bigquery_dataset_jira: str = "jira"
     bigquery_dataset_slack: str = "slack"
     bigquery_dataset_calendar: str = "calendar"
@@ -37,10 +41,10 @@ class Settings(BaseSettings):
     fivetran_api_secret: str = ""
     fivetran_group_id: str = ""
 
-    # --- GitLab MCP (action layer — create/assign/label issues) ---
-    gitlab_mcp_url: str = ""
-    gitlab_token: str = ""
-    gitlab_project_id: str = ""
+    # --- GitHub MCP (action layer — create/assign/label issues) ---
+    github_mcp_url: str = ""
+    github_token: str = ""
+    github_repo: str = "itsRenuka22/stealth-labs-platform"
 
     # --- Server ---
     backend_host: str = "0.0.0.0"

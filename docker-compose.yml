@@ -20,20 +20,20 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./service-account.json:/app/service-account.json:ro
     depends_on:
       - firestore
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
-    build:
-      context: ./frontend
+    image: node:20-slim
+    working_dir: /app
     environment:
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
-    command: npm run dev
+    command: sh -c "npm install && npm run dev"
