@@ -1,6 +1,6 @@
 -- Derived view: discussion threads that look like undone work (bridge input).
 -- Surfaces recent Slack messages / Jira comments that may imply a task or bug, for the agent to
--- classify and (if actionable) draft into a GitLab issue proposal.
+-- classify and (if actionable) draft into a GitHub issue proposal.
 -- Source: Fivetran-synced Slack + Jira.
 --
 -- TODO: replace placeholder column/table names; this is a coarse pre-filter — the agent does the

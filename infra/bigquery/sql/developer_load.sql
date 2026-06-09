@@ -13,22 +13,22 @@ WITH open_issues AS (
   GROUP BY developer
 ),
 review_queue AS (
-  SELECT reviewer AS developer, COUNT(*) AS mrs_awaiting_review
-  FROM `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_GITLAB}.merge_request`
-  WHERE state = 'opened'
+  SELECT requested_reviewer AS developer, COUNT(*) AS prs_awaiting_review
+  FROM `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_GITHUB}.pull_request`
+  WHERE state = 'open'
   GROUP BY developer
 )
 SELECT
   COALESCE(oi.developer, rq.developer) AS developer,
   IFNULL(oi.open_issues, 0)            AS open_issues,
   IFNULL(oi.story_points_in_flight, 0) AS story_points_in_flight,
-  IFNULL(rq.mrs_awaiting_review, 0)    AS mrs_awaiting_review,
+  IFNULL(rq.prs_awaiting_review, 0)    AS prs_awaiting_review,
   -- TODO: join on-call (pagerduty) + meeting_hours (calendar)
   FALSE                                AS on_call,
   0.0                                  AS meeting_hours,
   -- Simple composite; tune weights later.
   IFNULL(oi.open_issues, 0)
     + IFNULL(oi.story_points_in_flight, 0)
-    + IFNULL(rq.mrs_awaiting_review, 0) AS load_score
+    + IFNULL(rq.prs_awaiting_review, 0) AS load_score
 FROM open_issues oi
 FULL OUTER JOIN review_queue rq USING (developer);

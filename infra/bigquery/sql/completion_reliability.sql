@@ -1,6 +1,6 @@
 -- Derived view: per-developer, per-sprint completion reliability (observability).
 -- Who consistently completes what's assigned vs who lags.
--- Source: Fivetran-synced Jira issues + (optionally) GitLab MR merge data.
+-- Source: Fivetran-synced Jira issues + (optionally) GitHub PR merge data.
 --
 -- TODO: replace placeholder column/table names; refine on-time + churn definitions.
 
