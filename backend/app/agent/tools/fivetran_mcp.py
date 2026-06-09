@@ -1,16 +1,22 @@
-"""ADK tools backed by the Fivetran MCP server (the mandatory partner integration).
+"""ADK tools backed by the Fivetran MCP server (the mandatory partner integration)."""
 
-These wrap the MCP client in integrations/mcp/fivetran_client.py. Every call routes through the
-activity tap, so invocations show up in the live MCP Activity Log automatically.
-"""
+from app.services.connectors_service import connectors_service
 
-# def sync_connector(connector: str) -> dict:
-#     """Trigger a Fivetran sync for a connector (gitlab|jira|slack|calendar|pagerduty)."""
-#     ...
 
-# def connector_status(connector: str) -> dict:
-#     """Return the current Fivetran sync status / last sync time."""
-#     ...
+async def sync_connector(connector: str) -> dict:
+    """Trigger a Fivetran sync for a connector (github|jira|slack|calendar|pagerduty)."""
+    return await connectors_service.sync(connector)
 
-# TOOLS = [sync_connector, connector_status]
-TOOLS: list = []  # TODO: populate with MCP-backed tool functions
+
+async def connector_status(connector: str) -> dict:
+    """Return the current Fivetran sync status and last sync time for a connector."""
+    info = connectors_service.get(connector)
+    return info or {"id": connector, "status": "unknown"}
+
+
+def list_connectors() -> list[dict]:
+    """List all Fivetran connectors and their current sync status."""
+    return connectors_service.list()
+
+
+TOOLS = [sync_connector, connector_status, list_connectors]
