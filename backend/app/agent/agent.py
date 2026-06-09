@@ -1,32 +1,75 @@
 """Root ADK agent definition (Gemini 3).
 
-Composes the agent's instructions + model + tools. Tools are thin wrappers in `tools/` that
-ultimately call `services/` and `integrations/`.
+Composes the DevLens agent with all tools. Falls back to a mock agent when
+google-adk isn't available or Vertex AI isn't configured, so the API layer
+can still run for UI development.
 """
 
-# from google.adk.agents import Agent
-# from app.config import settings
-# from app.agent.tools import (
-#     bigquery_tools, fivetran_mcp, gitlab_mcp, bridge_tools, analysis_tools,
-# )
+import logging
+from pathlib import Path
+
+from app.config import settings
+
+log = logging.getLogger(__name__)
+
+_SYSTEM_PROMPT = (Path(__file__).parent / "prompts" / "system.md").read_text()
 
 
 def build_agent():
-    """Construct and return the root DevLens agent.
+    """Construct and return the root DevLens agent."""
+    from app.agent.tools import bigquery_tools, fivetran_mcp, github_mcp, bridge_tools, analysis_tools
 
-    TODO:
-      root_agent = Agent(
-          name="devlens",
-          model=settings.gemini_model,
-          instruction=<system prompt from prompts/>,
-          tools=[
-              *bigquery_tools.TOOLS,   # query metrics / observability views
-              *fivetran_mcp.TOOLS,     # sync layer
-              *gitlab_mcp.TOOLS,       # action layer (file issues)
-              *bridge_tools.TOOLS,     # discussion -> proposed issue
-              *analysis_tools.TOOLS,
-          ],
-      )
-      return root_agent
-    """
-    raise NotImplementedError
+    try:
+        from google.adk.agents import Agent
+
+        agent = Agent(
+            name="devlens",
+            model=settings.gemini_model,
+            instruction=_SYSTEM_PROMPT,
+            tools=[
+                *bigquery_tools.TOOLS,
+                *fivetran_mcp.TOOLS,
+                *github_mcp.TOOLS,
+                *bridge_tools.TOOLS,
+                *analysis_tools.TOOLS,
+            ],
+        )
+        log.info("ADK agent built with model %s", settings.gemini_model)
+        return agent
+    except Exception as exc:
+        log.warning("ADK unavailable (%s) — using mock agent", exc)
+        return _MockAgent()
+
+
+class _MockAgent:
+    """Minimal stand-in used when google-adk isn't importable or configured."""
+
+    name = "devlens-mock"
+
+    async def run_async(self, session, new_message):
+        yield _MockEvent(f"[mock agent] Received: {new_message}")
+
+
+class _MockEvent:
+    def __init__(self, text: str) -> None:
+        self._text = text
+
+    def is_final_response(self) -> bool:
+        return True
+
+    class _Content:
+        def __init__(self, text: str) -> None:
+            self.role = "model"
+
+            class _Part:
+                pass
+
+            p = _Part()
+            p.text = text
+            p.function_call = None
+            p.function_response = None
+            self.parts = [p]
+
+    @property
+    def content(self):
+        return self._Content(self._text)
