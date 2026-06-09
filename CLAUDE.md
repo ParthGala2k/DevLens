@@ -8,27 +8,28 @@ This file orients any Claude Code session working in this repo. Keep it current 
 Hackathon (Fivetran track)**, due **2026-06-11 @ 2:00pm PDT**.
 
 A Gemini 3 agent (Google ADK / Agent Builder) works over team data that **Fivetran** syncs into
-**BigQuery** (GitLab, Jira, Slack, Google Calendar, PagerDuty). It does two things:
+**BigQuery** (GitHub, Jira, Slack, Google Calendar, PagerDuty). It does two things:
 
-1. **Discussion → repo bridge:** detects when a Slack/Jira thread implies undone work, drafts a GitLab
-   issue, and — after **human approval** — files it via the **GitLab MCP server**.
+1. **Discussion → repo bridge:** detects when a Slack/Jira thread implies undone work, drafts a GitHub
+   issue, and — after **human approval** — files it via the **GitHub MCP server**.
 2. **Developer observability:** per-dev load score + completion reliability, plus the classic blind
-   spots (MR review lag, deep work vs meetings, estimation accuracy, on-call noise).
+   spots (PR review lag, deep work vs meetings, estimation accuracy, on-call noise).
 
-The Next.js dashboard streams the agent's reasoning and every MCP call (Fivetran + GitLab) live.
+The Next.js dashboard streams the agent's reasoning and every MCP call (Fivetran + GitHub) live.
 Full design + roadmap: `docs/architecture.md`.
 
 ## Stack
 
 - **Backend:** Python 3.12, FastAPI (async, Server-Sent Events for streaming).
 - **Agent:** Google ADK + Gemini 3 (Vertex AI / Agent Builder).
-- **MCP servers:** Fivetran (sync — mandatory track integration) + GitLab (action — file issues).
+- **MCP servers:** Fivetran (sync — mandatory track integration) + GitHub (action — file issues).
 - **Analytics warehouse:** BigQuery (Fivetran sync target).
 - **App state:** Firestore (alerts, issue proposals, chat history, connector status, agent runs).
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind; Recharts for charts.
 - **Hosting:** Cloud Run (backend + frontend).
 
-**Data sources (Fivetran → BigQuery):** GitLab, Jira, Slack, Calendar, PagerDuty.
+**Data sources (Fivetran → BigQuery):** GitHub, Jira, Slack, Calendar, PagerDuty.
+**Demo repo:** `itsRenuka22/stealth-labs-platform` (GitHub). **Jira project:** SLS (sjsu-team-devlens.atlassian.net).
 
 ## Repository layout
 
@@ -37,11 +38,11 @@ backend/app/
   api/routes/      thin HTTP controllers (connectors, dashboard, team, bridge, alerts, chat, mcp_log)
   api/schemas/     pydantic request/response DTOs
   agent/           ADK agent: agent.py, runner.py, events.py, prompts/,
-                   tools/ (bigquery_tools, fivetran_mcp, gitlab_mcp, bridge_tools, analysis_tools)
+                   tools/ (bigquery_tools, fivetran_mcp, github_mcp, bridge_tools, analysis_tools)
   services/        business logic — agent & jobs call these, NOT routes
                    (metrics, workload, bridge, alerts, chat, connectors)
   integrations/    external I/O: bigquery_client, firestore_client,
-                   mcp/ (session, activity_log, fivetran_client, gitlab_client)
+                   mcp/ (session, activity_log, fivetran_client, github_client)
   domain/          entities (alert, metric, connector, chat, issue_proposal, developer)
   events/bus.py    in-process pub/sub fanned out to SSE channels
   jobs/            background tasks (alert_scanner, bridge_scanner)
@@ -60,11 +61,11 @@ docs/              architecture, data-model, data-pipeline (bring-up runbook), m
 - **Layering:** `api` (thin) → `services` (logic) → `integrations` (I/O). Never call integrations
   directly from routes; never put business logic in routes. The agent and jobs reuse `services`.
 - **Events are first-class:** one `events/bus.py` fans out to SSE channels (chat, alerts, bridge,
-  mcp_log). `integrations/mcp/activity_log.py` wraps every MCP call (Fivetran **and** GitLab) so the
+  mcp_log). `integrations/mcp/activity_log.py` wraps every MCP call (Fivetran **and** GitHub) so the
   UI MCP log is automatic — do not hand-instrument individual MCP calls. Use
-  `tap(action, server="fivetran"|"gitlab", connector=...)`.
-- **Human-in-the-loop for writes:** the agent *proposes* GitLab issues into `issue_proposals`; a human
-  approves before `gitlab_client.create_issue` runs. Don't auto-file.
+  `tap(action, server="fivetran"|"github", connector=...)`.
+- **Human-in-the-loop for writes:** the agent *proposes* GitHub issues into `issue_proposals`; a human
+  approves before `github_client.create_issue` runs. Don't auto-file.
 - **Contracts shared:** event/DTO shapes are defined once in `shared/contracts/*.json`. Backend
   pydantic models and frontend TS types both derive from these — keep them in sync.
 - **Secrets:** never hardcode. Config comes from env via `backend/app/config.py` (pydantic-settings).
@@ -89,7 +90,7 @@ make deploy     # build + deploy both services to Cloud Run
 
 ## Status
 
-Skeleton scaffolded; extended for the discussion→repo bridge + developer observability + GitLab MCP.
+Skeleton scaffolded; extended for the discussion→repo bridge + developer observability + GitHub MCP.
 Modules are documented stubs awaiting implementation — see the phased roadmap in `docs/architecture.md`.
-Credentials (GCP project, Fivetran account + connectors, Fivetran MCP endpoint, GitLab MCP endpoint +
+Credentials (GCP project, Fivetran account + connectors, Fivetran MCP endpoint, GitHub MCP endpoint +
 token) are required before Phase 1 (real data + MCP plumbing).

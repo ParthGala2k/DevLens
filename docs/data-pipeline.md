@@ -15,13 +15,13 @@ Source APIs → Fivetran connectors → raw datasets (Fivetran-managed schema)
 
 | Owner | Responsibility |
 |---|---|
-| **Demo-data teammate** | Create the **GitLab project on gitlab.com** (NOT GitHub) and populate realistic activity. Hand over: project ID/path, a **personal access token (`api` scope)** for the GitLab MCP, and confirm Fivetran can reach it. |
+| **Demo-data teammate** | Populate the **GitHub demo repo** (`itsRenuka22/stealth-labs-platform`) with realistic PRs, issues, and branches. Generate a **personal access token (`repo` scope)** for the GitHub MCP → share it as `GITHUB_TOKEN`. |
 | **Data/infra owner** | Fivetran account + BigQuery destination + connectors; the derived BigQuery views in `devlens_metrics`. |
-| **Narrative owner** | Seed matching **Jira + Slack** demo data so a Slack/Jira thread maps to a GitLab issue (the bridge story). |
+| **Narrative owner** | Seed matching **Jira + Slack** demo data so a Slack/Jira thread maps to a GitHub issue (the bridge story). Jira project key: **SLS** (sjsu-team-devlens.atlassian.net). |
 
-> **Code repo vs demo repo:** our source code lives on GitHub (`ParthGala2k/DevLens`). The **demo
-> GitLab project** is separate and must be on GitLab, because both the Fivetran GitLab connector
-> (reads history) and the GitLab MCP (creates issues) target it.
+> **Source code vs demo repo:** our source code lives on GitHub (`ParthGala2k/DevLens`). The **demo
+> repo** is also on GitHub (`itsRenuka22/stealth-labs-platform`) — both the Fivetran GitHub connector
+> (reads PR/issue history) and the GitHub MCP (creates issues) target it.
 
 ---
 
@@ -32,8 +32,8 @@ Source APIs → Fivetran connectors → raw datasets (Fivetran-managed schema)
    account needs **BigQuery Data Editor + Job User**. Choose **one region** (e.g. `US`) and use it
    everywhere (destination + all datasets must match).
 3. Add each **connector** and set its destination dataset:
-   - GitLab → `gitlab`
-   - Jira → `jira`
+   - GitHub → `github`   (point at `itsRenuka22/stealth-labs-platform`)
+   - Jira → `jira`       (project key: SLS)
    - Slack → `slack`
    - Google Calendar → `calendar`
    - PagerDuty → `pagerduty`
@@ -41,7 +41,7 @@ Source APIs → Fivetran connectors → raw datasets (Fivetran-managed schema)
    (~15 min) for the demo.
 5. Capture the **Fivetran MCP** endpoint + API key/secret + group id → `.env`
    (`FIVETRAN_MCP_URL`, `FIVETRAN_API_KEY`, `FIVETRAN_API_SECRET`, `FIVETRAN_GROUP_ID`).
-6. Capture **GitLab MCP** details → `.env` (`GITLAB_MCP_URL`, `GITLAB_TOKEN`, `GITLAB_PROJECT_ID`).
+6. Capture **GitHub MCP** details → `.env` (`GITHUB_MCP_URL`, `GITHUB_TOKEN`, `GITHUB_REPO=itsRenuka22/stealth-labs-platform`).
 
 Confirm each connector exists in Fivetran's catalog when you start (versions vary).
 
@@ -65,7 +65,7 @@ Confirm each connector exists in Fivetran's catalog when you start (versions var
 
 | Dataset | Key tables (approx.) |
 |---|---|
-| `gitlab` | `merge_request` (iid, project_id, author_id, state, created_at, merged_at), `note`/`merge_request_note` (reviews/comments), `issue`, `pipeline`, `user`, `project`, `label` |
+| `github` | `pull_request` (number, title, user_login, state, created_at, merged_at), `pull_request_review` (reviewer, state, submitted_at), `issue`, `commit`, `repository` |
 | `jira` | `issue` (key, status, assignee, **story_points** custom field, sprint, created, resolved), `comment`, `changelog`, `sprint`, `user` |
 | `slack` | `message` (channel_id, user_id, text, ts, thread_ts, permalink), `channel`, `user` |
 | `calendar` | `event` (id, summary, start, end, organizer), `attendee` |
@@ -73,7 +73,7 @@ Confirm each connector exists in Fivetran's catalog when you start (versions var
 
 ### Derived (ours, in `devlens_metrics` — see `infra/bigquery/sql/`)
 
-`mr_review_lag`, `deep_work_blocks`, `estimation_accuracy`, `oncall_noise`,
+`pr_review_lag`, `deep_work_blocks`, `estimation_accuracy`, `oncall_noise`,
 `developer_load`, `completion_reliability`, `actionable_threads`.
 (Output shapes mirrored in `shared/contracts/workload.json`.)
 
@@ -84,7 +84,7 @@ Confirm each connector exists in Fivetran's catalog when you start (versions var
 
 ## 5. Cross-source identity (decide before writing views)
 
-A developer appears as `author_id` (GitLab), `assignee` (Jira), `user_id` (Slack), and an email
+A developer appears as `user_login` (GitHub), `assignee` (Jira), `user_id` (Slack), and an email
 (Calendar). Per-dev load/reliability needs these unified.
 
 **Recommended for the demo:** key on **email** where available, or keep a tiny seed mapping table
@@ -95,7 +95,7 @@ layer — settle it early.
 
 ## 6. Bring-up order (don't block on all five)
 
-1. **GitLab + Jira + Slack** first — they drive the bridge and the headline demo.
+1. **GitHub + Jira + Slack** first — they drive the bridge and the headline demo.
 2. **Calendar + PagerDuty** next — observability polish (deep work, on-call noise).
 
 Build and test the views + agent against the first three while the rest sync.
@@ -104,11 +104,11 @@ Build and test the views + agent against the first three while the rest sync.
 
 ## Status checklist
 
-- [ ] GitLab demo project created + populated (teammate) → project id + PAT shared
+- [ ] GitHub demo repo (`itsRenuka22/stealth-labs-platform`) populated with PRs/issues → GITHUB_TOKEN shared
 - [ ] Jira + Slack demo data seeded (matching thread → issue)
 - [ ] Fivetran account + BigQuery destination (single region)
-- [ ] Connectors added (gitlab, jira, slack, calendar, pagerduty) + initial sync done
-- [ ] Fivetran MCP + GitLab MCP creds in `.env`
+- [ ] Connectors added (github, jira, slack, calendar, pagerduty) + initial sync done
+- [ ] Fivetran MCP + GitHub MCP creds in `.env`
 - [ ] Raw schemas inspected; view SQL placeholders updated
 - [ ] Identity mapping decided (email vs seed table)
 - [ ] `devlens_metrics` views applied (`make bq-views`)

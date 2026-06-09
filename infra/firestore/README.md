@@ -2,7 +2,7 @@
 
 Collections:
 
-- `connectors/{id}` — `{status, last_sync_at}` for gitlab/jira/slack/calendar/pagerduty
+- `connectors/{id}` — `{status, last_sync_at}` for github/jira/slack/calendar/pagerduty
 - `alerts/{id}` — proactive alerts (see `shared/contracts/alert.json`)
 - `issue_proposals/{id}` — discussion→repo bridge approval queue (see `shared/contracts/issue-proposal.json`)
 - `chat_sessions/{id}/messages/{msgId}` — chat history

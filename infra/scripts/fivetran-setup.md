@@ -2,8 +2,8 @@
 
 1. Create a Fivetran account and a **destination** pointing at this GCP project's BigQuery.
 2. Add five **connectors**, each into its own dataset:
-   - GitLab → dataset `gitlab`   (repo of record: MRs, issues, pipelines)
-   - Jira → dataset `jira`
+   - GitHub → dataset `github`   (repo of record: PRs, issues — demo repo: itsRenuka22/stealth-labs-platform)
+   - Jira → dataset `jira`       (demo project: SLS at sjsu-team-devlens.atlassian.net)
    - Slack → dataset `slack`     (team discussion — bridge input)
    - Google Calendar → dataset `calendar`
    - PagerDuty → dataset `pagerduty`
@@ -12,9 +12,9 @@
 5. Note the **Fivetran MCP server** endpoint + API key/secret and group id → put in `.env`
    (`FIVETRAN_MCP_URL`, `FIVETRAN_API_KEY`, `FIVETRAN_API_SECRET`, `FIVETRAN_GROUP_ID`).
 
-## GitLab MCP (action layer — separate from Fivetran)
-Fivetran *reads* GitLab history; the **GitLab MCP server** *writes* (creates issues from the
+## GitHub MCP (action layer — separate from Fivetran)
+Fivetran *reads* GitHub history; the **GitHub MCP server** *writes* (creates issues from the
 bridge). Configure separately in `.env`:
-- `GITLAB_MCP_URL`, `GITLAB_TOKEN` (PAT with `api` scope), `GITLAB_PROJECT_ID` (demo target project).
+- `GITHUB_MCP_URL`, `GITHUB_TOKEN` (PAT with `repo` scope), `GITHUB_REPO` (e.g. `itsRenuka22/stealth-labs-platform`).
 
 > Connectors have the longest lead time (initial syncs + OAuth). Start this first.
