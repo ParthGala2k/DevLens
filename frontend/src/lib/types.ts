@@ -9,8 +9,8 @@ export interface AgentEvent {
 }
 
 export interface McpEvent {
-  server: "fivetran" | "gitlab";
-  connector?: "gitlab" | "jira" | "slack" | "calendar" | "pagerduty" | null;
+  server: "fivetran" | "github";
+  connector?: "github" | "jira" | "slack" | "calendar" | "pagerduty" | null;
   action: string;
   status: "start" | "success" | "error";
   ts: string;
@@ -22,13 +22,13 @@ export interface Alert {
   severity: "info" | "warning" | "critical";
   title: string;
   detail: string;
-  source: "gitlab" | "jira" | "slack" | "calendar" | "pagerduty" | "cross";
+  source: "github" | "jira" | "slack" | "calendar" | "pagerduty" | "cross";
   evidence: unknown[];
   createdAt: string;
 }
 
 export interface Connector {
-  id: "gitlab" | "jira" | "slack" | "calendar" | "pagerduty";
+  id: "github" | "jira" | "slack" | "calendar" | "pagerduty";
   status: "connected" | "syncing" | "error";
   lastSyncAt: string | null;
 }
@@ -43,7 +43,7 @@ export interface IssueProposal {
   labels: string[];
   suggestedAssignee: string | null;
   confidence: number;
-  gitlabIssueUrl: string | null;
+  githubIssueUrl: string | null;
   createdAt: string;
 }
 
@@ -51,7 +51,7 @@ export interface DeveloperLoad {
   developer: string;
   openIssues: number;
   storyPointsInFlight: number;
-  mrsAwaitingReview: number;
+  prsAwaitingReview: number;
   onCall: boolean;
   meetingHours: number;
   loadScore: number;

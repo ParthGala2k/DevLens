@@ -1,29 +1,41 @@
-/**
- * Dashboard home — composes the four panels + the live MCP activity log.
- * TODO: replace placeholders with the real components from src/components/*.
- */
+import { DataSyncPanel } from "@/components/data-sync/DataSyncPanel";
+import { SprintHealthDashboard } from "@/components/dashboard/SprintHealthDashboard";
+import { WorkloadHeatmap } from "@/components/team/WorkloadHeatmap";
+import { ReliabilityTable } from "@/components/team/ReliabilityTable";
+import { ProposalQueue } from "@/components/bridge/ProposalQueue";
+import { AlertFeed } from "@/components/alerts/AlertFeed";
+import { McpActivityLog } from "@/components/mcp-log/McpActivityLog";
+import Link from "next/link";
+
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-semibold">DevLens</h1>
-      <p className="text-sm text-gray-500">Developer Productivity Blind Spot Agent</p>
+    <main className="min-h-screen bg-gray-50 p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">DevLens</h1>
+          <p className="text-sm text-gray-500">Developer Productivity Blind Spot Agent · itsRenuka22/stealth-labs-platform</p>
+        </div>
+        <Link
+          href="/chat"
+          className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+        >
+          Ask DevLens →
+        </Link>
+      </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <section className="lg:col-span-2 space-y-6">
-          {/* <DataSyncPanel /> */}
-          {/* <SprintHealthDashboard /> */}
-          {/* <WorkloadHeatmap /> <ReliabilityTable />  — developer observability */}
-          {/* <ProposalQueue />  — discussion→repo bridge approval queue */}
-          {/* <AlertFeed /> */}
-          <div className="rounded border border-dashed p-8 text-center text-gray-400">
-            Data Sync + Sprint Health + Team Observability + Proposal Queue + Alert Feed go here
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <DataSyncPanel />
+          <SprintHealthDashboard />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <WorkloadHeatmap />
+            <ReliabilityTable />
           </div>
-        </section>
-        <aside>
-          {/* <McpActivityLog />  — judge-visible live MCP calls (Fivetran + GitLab) */}
-          <div className="rounded border border-dashed p-8 text-center text-gray-400">
-            MCP Activity Log (Fivetran + GitLab)
-          </div>
+          <ProposalQueue />
+          <AlertFeed />
+        </div>
+        <aside className="lg:col-span-1">
+          <McpActivityLog />
         </aside>
       </div>
     </main>

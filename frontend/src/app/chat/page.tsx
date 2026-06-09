@@ -1,14 +1,20 @@
-/**
- * Chat page — natural-language questions answered by the agent, with visible tool calls.
- * TODO: render <ChatWindow /> and wire it to the /api/chat SSE stream via lib/sse.ts.
- */
+import { ChatWindow } from "@/components/chat/ChatWindow";
+import Link from "next/link";
+
 export default function ChatPage() {
   return (
-    <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-semibold">Ask DevLens</h1>
-      {/* <ChatWindow /> */}
-      <div className="mt-6 rounded border border-dashed p-8 text-center text-gray-400">
-        Chat window goes here
+    <main className="min-h-screen bg-gray-50 p-6">
+      <div className="mb-4 flex items-center gap-4">
+        <Link href="/" className="text-sm text-blue-600 hover:underline">
+          ← Dashboard
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Ask DevLens</h1>
+          <p className="text-sm text-gray-500">Gemini agent over GitHub, Jira, Slack, Calendar, PagerDuty</p>
+        </div>
+      </div>
+      <div className="max-w-2xl">
+        <ChatWindow />
       </div>
     </main>
   );
