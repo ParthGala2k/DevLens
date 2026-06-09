@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "IssueProposal",
-  "description": "A GitLab issue drafted by the agent from a discussion thread, awaiting human approval before it is filed via the GitLab MCP server.",
+  "description": "A GitHub issue drafted by the agent from a discussion thread, awaiting human approval before it is filed via the GitHub MCP server.",
   "type": "object",
   "required": ["id", "status", "source", "source_ref", "title", "description", "created_at"],
   "properties": {
@@ -21,7 +21,7 @@
     "labels": { "type": "array", "items": { "type": "string" } },
     "suggested_assignee": { "type": ["string", "null"] },
     "confidence": { "type": "number", "description": "Agent confidence the thread is actionable (0-1)" },
-    "gitlab_issue_url": { "type": ["string", "null"], "description": "Set once filed" },
+    "github_issue_url": { "type": ["string", "null"], "description": "Set once filed" },
     "created_at": { "type": "string", "format": "date-time" }
   }
 }
