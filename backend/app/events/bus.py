@@ -1,11 +1,7 @@
-"""In-process async pub/sub event bus.
+"""In-process event bus — fans out to SSE channels (chat, alerts, bridge, mcp_log).
 
-Backs the three SSE streams (chat, alerts, mcp_log). Producers (agent runner, alert scanner,
-MCP activity tap) publish to a named channel; SSE endpoints subscribe and fan events out to
-connected clients.
-
-This is a minimal working implementation using per-subscriber asyncio queues; for multi-instance
-deployments swap for Pub/Sub or Redis behind the same interface.
+One bus instance per process; SSE route handlers subscribe and yield events to clients.
+The ring buffer lets initial render show recent events without needing Firestore.
 """
 
 import asyncio
@@ -14,21 +10,34 @@ from typing import Any, AsyncIterator
 
 
 class EventBus:
-    def __init__(self) -> None:
-        self._subscribers: dict[str, set[asyncio.Queue]] = defaultdict(set)
+    def __init__(self, ring_size: int = 50) -> None:
+        self._queues: dict[str, list[asyncio.Queue]] = defaultdict(list)
+        self._ring: dict[str, list[dict]] = defaultdict(list)
+        self._ring_size = ring_size
 
     async def publish(self, channel: str, event: Any) -> None:
-        for q in list(self._subscribers.get(channel, ())):
-            await q.put(event)
+        buf = self._ring[channel]
+        buf.append(event)
+        if len(buf) > self._ring_size:
+            buf.pop(0)
+        for q in list(self._queues[channel]):
+            try:
+                q.put_nowait(event)
+            except asyncio.QueueFull:
+                pass
+
+    def recent(self, channel: str, n: int = 50) -> list:
+        return list(self._ring[channel][-n:])
 
     async def subscribe(self, channel: str) -> AsyncIterator[Any]:
-        q: asyncio.Queue = asyncio.Queue()
-        self._subscribers[channel].add(q)
+        q: asyncio.Queue = asyncio.Queue(maxsize=100)
+        self._queues[channel].append(q)
         try:
             while True:
                 yield await q.get()
         finally:
-            self._subscribers[channel].discard(q)
+            if q in self._queues[channel]:
+                self._queues[channel].remove(q)
 
 
 # Process-wide singleton (fine for a single Cloud Run instance / the demo).

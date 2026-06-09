@@ -2,22 +2,16 @@
 
 from fastapi import APIRouter
 
+from app.services.workload_service import workload_service
+
 router = APIRouter(prefix="/api/team", tags=["team"])
 
 
 @router.get("/workload")
-async def workload():
-    """Per-developer load score for the workload heatmap.
-
-    TODO: WorkloadService.load() -> BigQuery view `developer_load`.
-    """
-    raise NotImplementedError
+async def workload() -> list[dict]:
+    return workload_service.load()
 
 
 @router.get("/reliability")
-async def reliability():
-    """Per-developer, per-sprint completion reliability for the reliability table.
-
-    TODO: WorkloadService.reliability() -> BigQuery view `completion_reliability`.
-    """
-    raise NotImplementedError
+async def reliability() -> list[dict]:
+    return workload_service.reliability()

@@ -1,43 +1,46 @@
-"""Discussion -> Repo bridge endpoints: issue proposals + human approval.
+"""Discussion -> Repo bridge endpoints: issue proposals + human approval."""
 
-The agent drafts issues from Slack/Jira threads into Firestore `issue_proposals`; these endpoints
-let the UI list them, stream new ones, and approve/reject. Approval is what triggers the GitLab MCP
-write — nothing is filed without a human.
-"""
+import json
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from app.events.bus import bus
+from app.services.bridge_service import bridge_service
 
 router = APIRouter(prefix="/api/bridge", tags=["bridge"])
 
 
-@router.get("/proposals")
-async def list_proposals():
-    """List pending (and recent) issue proposals.
+class ApproveRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    labels: list[str] | None = None
+    suggested_assignee: str | None = None
 
-    TODO: BridgeService.list_proposals() -> Firestore `issue_proposals`.
-    """
-    raise NotImplementedError
+
+@router.get("/proposals")
+async def list_proposals(status: str | None = None) -> list[dict]:
+    return bridge_service.list_proposals(status=status)
 
 
 @router.get("/proposals/stream")
 async def stream_proposals():
-    """SSE stream of new proposals as the bridge scanner produces them.
+    async def _generate():
+        for event in bus.recent("bridge"):
+            yield f"data: {json.dumps(event)}\n\n"
+        async for event in bus.subscribe("bridge"):
+            yield f"data: {json.dumps(event)}\n\n"
 
-    TODO: subscribe to event bus "bridge" channel and yield SSE events.
-    """
-    raise NotImplementedError
+    return StreamingResponse(_generate(), media_type="text/event-stream")
 
 
 @router.post("/proposals/{proposal_id}/approve")
-async def approve_proposal(proposal_id: str):
-    """Approve (optionally with edits) -> file the issue via GitLab MCP.
-
-    TODO: BridgeService.approve(proposal_id, edits) -> GitLabMcpClient.create_issue + assign + label.
-    """
-    raise NotImplementedError
+async def approve_proposal(proposal_id: str, body: ApproveRequest | None = None) -> dict:
+    edits = body.model_dump(exclude_none=True) if body else None
+    return await bridge_service.approve(proposal_id, edits)
 
 
 @router.post("/proposals/{proposal_id}/reject")
-async def reject_proposal(proposal_id: str):
-    """Dismiss a proposal. TODO: BridgeService.reject(proposal_id)."""
-    raise NotImplementedError
+async def reject_proposal(proposal_id: str) -> dict:
+    return bridge_service.reject(proposal_id)

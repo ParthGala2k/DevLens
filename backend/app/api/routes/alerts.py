@@ -1,23 +1,29 @@
-"""Proactive Alert Feed endpoints: list past alerts + live SSE stream of new ones."""
+"""Proactive Alert Feed endpoints: list past alerts + live SSE stream."""
+
+import json
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
+
+from app.events.bus import bus
+from app.services.alerts_service import alerts_service
 
 router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 
 
 @router.get("")
-async def list_alerts():
-    """Return recent proactive alerts.
-
-    TODO: AlertsService.list() -> Firestore `alerts` collection.
-    """
-    raise NotImplementedError
+async def list_alerts() -> list[dict]:
+    return alerts_service.get_all()
 
 
 @router.get("/stream")
 async def stream_alerts():
-    """SSE stream of new alerts as the background scanner produces them.
+    async def _generate():
+        # Replay recent alerts for initial render.
+        for event in bus.recent("alerts"):
+            yield f"data: {json.dumps(event)}\n\n"
+        # Then stream live.
+        async for event in bus.subscribe("alerts"):
+            yield f"data: {json.dumps(event)}\n\n"
 
-    TODO: subscribe to event bus "alerts" channel and yield SSE events.
-    """
-    raise NotImplementedError
+    return StreamingResponse(_generate(), media_type="text/event-stream")

@@ -1,27 +1,27 @@
-"""MCP Activity Log endpoint — the judge-visible live feed of every Fivetran MCP call.
+"""MCP Activity Log endpoint — judge-visible live feed of every Fivetran + GitHub MCP call."""
 
-Powered by integrations/mcp/activity_log.py, which taps every MCP call and publishes it to
-the event bus "mcp_log" channel. This route just fans those out over SSE.
-"""
+import json
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
+
+from app.events.bus import bus
+from app.integrations.mcp.activity_log import recent_calls
 
 router = APIRouter(prefix="/api/mcp-log", tags=["mcp"])
 
 
+@router.get("")
+async def recent_mcp_calls(n: int = 50) -> list[dict]:
+    return recent_calls(n)
+
+
 @router.get("/stream")
 async def stream_mcp_log():
-    """SSE stream of MCP calls, e.g. {connector, action, status, ts, payload}.
+    async def _generate():
+        for event in recent_calls(20):
+            yield f"data: {json.dumps(event)}\n\n"
+        async for event in bus.subscribe("mcp_log"):
+            yield f"data: {json.dumps(event)}\n\n"
 
-    TODO: subscribe to event bus "mcp_log" channel and yield SSE events.
-    """
-    raise NotImplementedError
-
-
-@router.get("")
-async def recent_mcp_calls():
-    """Return the most recent MCP calls (for initial render / refresh).
-
-    TODO: read from an in-memory ring buffer in activity_log, or Firestore `agent_runs`.
-    """
-    raise NotImplementedError
+    return StreamingResponse(_generate(), media_type="text/event-stream")
