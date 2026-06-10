@@ -30,7 +30,7 @@ lint:
 	cd frontend && npm run lint
 
 bq-views:
-	@echo "TODO: apply infra/bigquery/sql/*.sql via bq query --use_legacy_sql=false"
+	python infra/bigquery/apply_views.py
 
 deploy:
 	@echo "TODO: gcloud run deploy for backend and frontend (see infra/cloudrun)"

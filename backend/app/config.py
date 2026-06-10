@@ -26,9 +26,7 @@ class Settings(BaseSettings):
     bigquery_project: str = ""
     bigquery_dataset_github: str = "github"
     bigquery_dataset_jira: str = "jira"
-    bigquery_dataset_slack: str = "slack"
-    bigquery_dataset_calendar: str = "calendar"
-    bigquery_dataset_pagerduty: str = "pagerduty"
+    bigquery_dataset_calendar: str = "google_calendar"
     bigquery_dataset_metrics: str = "devlens_metrics"
 
     # --- Firestore ---
