@@ -13,7 +13,12 @@ router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 
 @router.get("")
 async def list_alerts() -> list[dict]:
-    return alerts_service.get_all()
+    alerts = alerts_service.get_all()
+    if not alerts:
+        # No alerts in Firestore yet — run the rule-based scan now so the UI
+        # shows real insights from the first page load.
+        alerts = await alerts_service.scan()
+    return alerts
 
 
 @router.get("/stream")

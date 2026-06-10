@@ -8,6 +8,6 @@ class Alert(BaseModel):
     severity: str           # info | warning | critical
     title: str
     detail: str
-    source: str             # github | jira | slack | calendar | pagerduty | cross
+    source: str             # github | jira | calendar | cross
     evidence: list[dict] = []
     created_at: str

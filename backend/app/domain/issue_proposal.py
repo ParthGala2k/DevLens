@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class IssueProposal(BaseModel):
     id: str
     status: str                     # pending | filed | dismissed
-    source: str                     # slack | jira
+    source: str                     # jira
     source_ref: str                 # thread/issue id + permalink
     title: str
     description: str

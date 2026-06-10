@@ -8,8 +8,6 @@ class DeveloperLoad(BaseModel):
     open_issues: int = 0
     story_points_in_flight: float = 0.0
     prs_awaiting_review: int = 0
-    on_call: bool = False
-    meeting_hours: float = 0.0
     load_score: float = 0.0
 
 

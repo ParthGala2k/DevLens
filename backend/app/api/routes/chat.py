@@ -22,10 +22,11 @@ async def send_message(body: ChatRequest) -> dict:
     return await chat_service.start_run(body.session_id, body.message)
 
 
-@router.get("/{session_id}/stream")
-async def stream_chat(session_id: str):
+@router.get("/run/{run_id}/stream")
+async def stream_chat(run_id: str):
+    """SSE stream for a single agent run. Each query gets a unique run_id."""
     async def _generate():
-        async for event in bus.subscribe(f"chat:{session_id}"):
+        async for event in bus.subscribe_with_replay(f"chat:{run_id}"):
             yield f"data: {json.dumps(event)}\n\n"
             if event.get("type") == "done":
                 break

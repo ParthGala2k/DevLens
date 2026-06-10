@@ -16,6 +16,18 @@ async def recent_mcp_calls(n: int = 50) -> list[dict]:
     return recent_calls(n)
 
 
+@router.get("/count")
+async def mcp_call_count() -> dict:
+    """Count of completed MCP calls today (success + error, excluding start events)."""
+    from datetime import datetime, timezone
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    count = sum(
+        1 for e in recent_calls(100)
+        if e.get("status") in ("success", "error") and e.get("ts", "").startswith(today)
+    )
+    return {"count": count}
+
+
 @router.get("/stream")
 async def stream_mcp_log():
     async def _generate():
