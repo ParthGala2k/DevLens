@@ -1,22 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiGet } from "@/lib/api-client";
 import { subscribe } from "@/lib/sse";
 
 export function McpCounter() {
   const [count, setCount] = useState<number | null>(null);
+  // Timestamp of when the initial REST count was fetched.
+  // Ring-buffer replay events predate this, so we skip them to avoid double-counting.
+  const fetchedAt = useRef<string>("");
 
   useEffect(() => {
     apiGet<{ count: number }>("/api/mcp-log/count")
-      .then((d) => setCount(d.count))
+      .then((d) => {
+        fetchedAt.current = new Date().toISOString();
+        setCount(d.count);
+      })
       .catch(() => {});
 
-    // Increment on every completed MCP call (success or error).
-    const unsub = subscribe<{ status: string }>("/api/mcp-log/stream", (event) => {
-      if (event.status === "success" || event.status === "error") {
-        setCount((n) => (n ?? 0) + 1);
-      }
+    const unsub = subscribe<{ status: string; ts?: string }>("/api/mcp-log/stream", (event) => {
+      if (event.status !== "success" && event.status !== "error") return;
+      // Only count events that arrived after the initial REST snapshot.
+      if (fetchedAt.current && (event.ts ?? "") <= fetchedAt.current) return;
+      setCount((n) => (n ?? 0) + 1);
     });
     return unsub;
   }, []);

@@ -2,14 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api-client";
-
-interface Sprint {
-  id: string;
-  name: string;
-  state: "active" | "closed" | "future";
-  start_date: string | null;
-  end_date: string | null;
-}
+import { useSelectedSprint, SprintInfo } from "@/lib/sprint-context";
 
 function fmt(dateStr: string | null): string {
   if (!dateStr) return "—";
@@ -20,6 +13,7 @@ function fmt(dateStr: string | null): string {
 const STATE_STYLES = {
   closed: {
     dot: "bg-gray-300",
+    dotSelected: "bg-gray-500 ring-4 ring-gray-200",
     connector: "bg-gray-200",
     name: "text-gray-500",
     dates: "text-gray-400",
@@ -28,6 +22,7 @@ const STATE_STYLES = {
   },
   active: {
     dot: "bg-blue-500 ring-4 ring-blue-100",
+    dotSelected: "bg-blue-700 ring-4 ring-blue-300",
     connector: "bg-blue-400",
     name: "text-blue-700 font-semibold",
     dates: "text-blue-500",
@@ -36,6 +31,7 @@ const STATE_STYLES = {
   },
   future: {
     dot: "bg-gray-200 border-2 border-dashed border-gray-300",
+    dotSelected: "bg-gray-400 ring-4 ring-gray-200",
     connector: "bg-gray-100 border-t border-dashed border-gray-300",
     name: "text-gray-400",
     dates: "text-gray-300",
@@ -45,13 +41,21 @@ const STATE_STYLES = {
 };
 
 export function SprintBanner() {
-  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [sprints, setSprints] = useState<SprintInfo[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const { selectedSprint, setSelectedSprint } = useSelectedSprint();
 
   useEffect(() => {
-    apiGet<Sprint[]>("/api/dashboard/sprints")
-      .then((data) => { setSprints(data); setLoaded(true); })
+    apiGet<SprintInfo[]>("/api/dashboard/sprints")
+      .then((data) => {
+        setSprints(data);
+        setLoaded(true);
+        // Default-select the active sprint
+        const active = data.find((s) => s.state === "active");
+        if (active) setSelectedSprint(active);
+      })
       .catch(() => setLoaded(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!loaded) {
@@ -66,39 +70,51 @@ export function SprintBanner() {
     );
   }
 
-  const activeSprint = sprints.find((s) => s.state === "active");
-
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm">
       <div className="mb-4 flex items-center gap-3">
         <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
           Sprint Timeline
         </span>
-        {activeSprint && (
+        {selectedSprint && (
           <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-            {activeSprint.name} active
+            {selectedSprint.name}
           </span>
         )}
-        {activeSprint?.end_date && (
+        {selectedSprint?.end_date && (
           <span className="text-xs text-gray-400">
-            ends {fmt(activeSprint.end_date)}
+            {selectedSprint.state === "active" ? "ends" : "ended"} {fmt(selectedSprint.end_date)}
           </span>
         )}
+        <span className="ml-auto text-xs text-gray-300">Click a sprint to filter the dashboard</span>
       </div>
 
       <div className="flex items-start">
         {sprints.map((sprint, i) => {
           const cfg = STATE_STYLES[sprint.state] ?? STATE_STYLES.future;
           const isLast = i === sprints.length - 1;
+          const isSelected = selectedSprint?.id === sprint.id;
           return (
-            <div key={sprint.id} className="flex flex-1 flex-col items-start">
+            <div
+              key={sprint.id}
+              className="flex flex-1 flex-col items-start cursor-pointer group"
+              onClick={() => setSelectedSprint(isSelected ? null : sprint)}
+            >
               {/* Timeline track + dot */}
               <div className="flex w-full items-center">
-                <div className={`h-3 w-3 shrink-0 rounded-full ${cfg.dot}`} />
+                <div
+                  className={`h-3 w-3 shrink-0 rounded-full transition-all ${
+                    isSelected ? cfg.dotSelected : cfg.dot
+                  } group-hover:scale-125`}
+                />
                 {!isLast && <div className={`h-0.5 flex-1 ${cfg.connector}`} />}
               </div>
               {/* Labels */}
-              <div className="mt-2 pr-3">
+              <div
+                className={`mt-2 pr-3 rounded-lg transition-colors ${
+                  isSelected ? "bg-blue-50 px-2 py-1 -mx-2" : ""
+                }`}
+              >
                 <p className={`text-xs font-medium ${cfg.name}`}>{sprint.name}</p>
                 {sprint.start_date && sprint.end_date && (
                   <p className={`text-xs ${cfg.dates}`}>

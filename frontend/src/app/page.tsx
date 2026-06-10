@@ -9,9 +9,12 @@ import { ReliabilityTable } from "@/components/team/ReliabilityTable";
 import { SprintBanner } from "@/components/sprint/SprintBanner";
 import { SprintPrediction } from "@/components/sprint/SprintPrediction";
 import { McpCounter } from "@/components/mcp-log/McpCounter";
+import { SprintProvider } from "@/lib/sprint-context";
+import { SprintHealthTitle } from "@/components/sprint/SprintHealthTitle";
 
 export default function DashboardPage() {
   return (
+    <SprintProvider>
     <div className="min-h-screen bg-gray-50 text-gray-900">
 
       {/* ── Header ─────────────────────────────────────────────────── */}
@@ -55,19 +58,14 @@ export default function DashboardPage() {
           <InsightCards />
         </section>
 
-        {/* ── Chat + MCP log ──────────────────────────────────────── */}
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-          <div className="lg:col-span-3">
-            <ChatWindow />
-          </div>
-          <div className="lg:col-span-2">
-            <McpActivityLog />
-          </div>
+        {/* ── Chat ────────────────────────────────────────────────── */}
+        <section>
+          <ChatWindow />
         </section>
 
         {/* ── Sprint health ────────────────────────────────────────── */}
         <section>
-          <SectionTitle label="Sprint Health — Sprint 3: Deployment Manager (active)" />
+          <SprintHealthTitle />
           <SprintHealthDashboard />
         </section>
 
@@ -89,8 +87,15 @@ export default function DashboardPage() {
           <DataSyncPanel />
         </section>
 
+        {/* ── MCP Activity Log ─────────────────────────────────────── */}
+        <section>
+          <SectionTitle label="MCP Activity Log" badge="live" />
+          <McpActivityLog />
+        </section>
+
       </div>
     </div>
+    </SprintProvider>
   );
 }
 

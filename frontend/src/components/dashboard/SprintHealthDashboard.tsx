@@ -6,6 +6,7 @@ import {
   CartesianGrid, ReferenceLine, Legend, LabelList, Cell,
 } from "recharts";
 import { apiGet } from "@/lib/api-client";
+import { useSelectedSprint } from "@/lib/sprint-context";
 
 interface PrLagRow {
   pr_number: number;
@@ -16,7 +17,7 @@ interface PrLagRow {
 }
 
 interface DeepWorkRow {
-  date: string;
+  day: string;
   developer: string;
   deep_work_hours: number;
   meeting_hours: number;
@@ -37,6 +38,7 @@ export function SprintHealthDashboard() {
   const [lag, setLag] = useState<PrLagRow[]>([]);
   const [deepWork, setDeepWork] = useState<DeepWorkRow[]>([]);
   const [estimation, setEstimation] = useState<EstimationRow[]>([]);
+  const { selectedSprint } = useSelectedSprint();
 
   useEffect(() => {
     apiGet<PrLagRow[]>("/api/dashboard/pr-review-lag").then(setLag).catch(() => {});
@@ -44,32 +46,62 @@ export function SprintHealthDashboard() {
     apiGet<EstimationRow[]>("/api/dashboard/estimation-accuracy").then(setEstimation).catch(() => {});
   }, []);
 
+  // Canonical team roster — developers without calendar data show 8h focus / 0 meetings.
+  const TEAM = ["Arjun", "James", "Priya", "Riya"];
+
+  // ── Sprint-based date filtering ───────────────────────────────────────────
+  const sprintStart = selectedSprint?.start_date ?? null;
+  const sprintEnd = selectedSprint?.end_date ?? null;
+
+  const deepWorkFiltered = deepWork.filter((r) => {
+    if (!sprintStart || !sprintEnd) return true;
+    const day = typeof r.day === "string" ? r.day : String(r.day);
+    return day >= sprintStart.slice(0, 10) && day <= sprintEnd.slice(0, 10);
+  });
+
+  // Derive sprint label used in estimation rows (e.g. "SLS Sprint 1") by matching sprint number
+  const selectedSprintNum = selectedSprint?.name.match(/\d+/)?.[0] ?? null;
+  const sprintLabel = selectedSprintNum
+    ? estimation.find((r) => r.sprint.match(/\d+/)?.[0] === selectedSprintNum)?.sprint ?? null
+    : null;
+
+  const estimationFiltered = sprintLabel
+    ? estimation.filter((r) => r.sprint === sprintLabel)
+    : estimation;
+
   // ── Deep work: average per developer across all dates ─────────────────────
-  const dwByDev = Object.values(
-    deepWork.reduce<
-      Record<string, { developer: string; deep_work_hours: number; meeting_hours: number; days: number }>
-    >((acc, r) => {
-      if (!acc[r.developer]) {
-        acc[r.developer] = { developer: r.developer, deep_work_hours: 0, meeting_hours: 0, days: 0 };
-      }
-      acc[r.developer].deep_work_hours += r.deep_work_hours;
-      acc[r.developer].meeting_hours += r.meeting_hours;
-      acc[r.developer].days += 1;
-      return acc;
-    }, {})
-  ).map((d) => ({
-    developer: d.developer,
-    "Deep work": parseFloat((d.deep_work_hours / d.days).toFixed(1)),
-    "Meetings": parseFloat((d.meeting_hours / d.days).toFixed(1)),
-  }));
+  const dwAgg = deepWorkFiltered.reduce<
+    Record<string, { developer: string; deep_work_hours: number; meeting_hours: number; days: number }>
+  >((acc, r) => {
+    if (!acc[r.developer]) {
+      acc[r.developer] = { developer: r.developer, deep_work_hours: 0, meeting_hours: 0, days: 0 };
+    }
+    acc[r.developer].deep_work_hours += r.deep_work_hours;
+    acc[r.developer].meeting_hours += r.meeting_hours;
+    acc[r.developer].days += 1;
+    return acc;
+  }, {});
+
+  const dwByDev = TEAM.map((name) => {
+    const d = dwAgg[name];
+    if (d && d.days > 0) {
+      return {
+        developer: name,
+        "Deep work": parseFloat((d.deep_work_hours / d.days).toFixed(1)),
+        "Meetings": parseFloat((d.meeting_hours / d.days).toFixed(1)),
+      };
+    }
+    // No calendar data — show full focus day as baseline
+    return { developer: name, "Deep work": 8.0, "Meetings": 0.0 };
+  });
 
   // ── Estimation: pivot to one row per developer, one column per sprint ─────
-  const sprints = Array.from(new Set(estimation.map((r) => r.sprint))).sort();
-  const devs = Array.from(new Set(estimation.map((r) => r.developer)));
+  const sprints = Array.from(new Set(estimationFiltered.map((r) => r.sprint))).sort();
+  const devs = Array.from(new Set(estimationFiltered.map((r) => r.developer)));
   const estByDev = devs.map((dev) => {
     const row: Record<string, unknown> = { developer: dev };
     sprints.forEach((s) => {
-      const match = estimation.find((r) => r.developer === dev && r.sprint === s);
+      const match = estimationFiltered.find((r) => r.developer === dev && r.sprint === s);
       row[s] = match ? parseFloat(match.accuracy_ratio.toFixed(2)) : null;
     });
     return row;

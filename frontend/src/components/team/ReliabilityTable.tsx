@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api-client";
+import { useSelectedSprint } from "@/lib/sprint-context";
 
 interface ReliabilityRow {
   developer: string;
@@ -33,10 +34,19 @@ function RatioBadge({ ratio }: { ratio: number }) {
 export function ReliabilityTable() {
   const [rows, setRows] = useState<ReliabilityRow[]>([]);
   const [sprint, setSprint] = useState<string>("all");
+  const { selectedSprint } = useSelectedSprint();
 
   useEffect(() => {
     apiGet<ReliabilityRow[]>("/api/team/reliability").then(setRows).catch(() => {});
   }, []);
+
+  // Sync with global sprint selection from SprintBanner
+  useEffect(() => {
+    if (!selectedSprint) { setSprint("all"); return; }
+    // Find the matching reliability sprint label (e.g. "SLS Sprint 1")
+    const num = selectedSprint.name.match(/\d+/)?.[0];
+    if (num) setSprint(`SLS Sprint ${num}`);
+  }, [selectedSprint]);
 
   const sprints = Array.from(new Set(rows.map((r) => r.sprint))).sort();
   const filtered = sprint === "all" ? rows : rows.filter((r) => r.sprint === sprint);

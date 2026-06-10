@@ -1,8 +1,10 @@
--- Derived view: ticket estimation accuracy.
--- Story points (customfield_10016) vs actual time spent per resolved issue.
--- time_spent is stored in seconds by Jira; converted to hours here.
--- Developer identity resolved from Jira assignee via developer_identity.
--- Source: Fivetran jira.issue + jira.issue_field_history + devlens_metrics.developer_identity
+-- Derived view: estimation accuracy per developer per sprint.
+-- Developer is extracted from the _Persona: Name (Role)_ tag in the Jira description.
+-- Sprint is inferred from the issue key range (SLS-28–36 = Sprint 1, etc.).
+-- estimated_points = total story points assigned to the developer in that sprint.
+-- completed_points = story points for issues in "Done" status (status 10005).
+-- accuracy_ratio   = completed / estimated (1.0 = perfect, <1 = under-delivered).
+-- Source: Fivetran jira.issue + jira.issue_field_history
 
 CREATE OR REPLACE VIEW `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_METRICS}.estimation_accuracy` AS
 WITH story_points AS (
@@ -13,19 +15,37 @@ WITH story_points AS (
   WHERE field_id = 'customfield_10016'
     AND is_active = TRUE
     AND value IS NOT NULL
+),
+issues_enriched AS (
+  SELECT
+    i.key,
+    i.id,
+    i.status,
+    -- Developer from description persona tag, not the (empty) Jira assignee field
+    REGEXP_EXTRACT(i.description, r'_Persona:\s+(\w+)')               AS developer,
+    sp.points                                                           AS estimate,
+    -- Sprint inferred from issue key number
+    CASE
+      WHEN CAST(REGEXP_EXTRACT(i.key, r'SLS-(\d+)') AS INT64) BETWEEN 28 AND 36
+        THEN 'SLS Sprint 1'
+      WHEN CAST(REGEXP_EXTRACT(i.key, r'SLS-(\d+)') AS INT64) BETWEEN 37 AND 46
+        THEN 'SLS Sprint 2'
+      ELSE 'SLS Sprint 3'
+    END                                                                 AS sprint
+  FROM `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_JIRA}.issue` AS i
+  JOIN story_points AS sp ON sp.issue_id = i.id
+  WHERE (i._fivetran_deleted IS FALSE OR i._fivetran_deleted IS NULL)
 )
 SELECT
-  i.key                                                          AS issue_key,
-  COALESCE(di.canonical_name, i.assignee)                       AS developer,
-  sp.points                                                      AS estimate,
-  SAFE_DIVIDE(i.time_spent, 3600.0)                             AS actual_hours,
+  sprint,
+  developer,
+  SUM(estimate)                                                         AS estimated_points,
+  SUM(CASE WHEN status = 10005 THEN estimate ELSE 0 END)               AS completed_points,
   SAFE_DIVIDE(
-    SAFE_DIVIDE(i.time_spent, 3600.0),
-    NULLIF(sp.points, 0)
-  )                                                              AS ratio
-FROM `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_JIRA}.issue` AS i
-JOIN story_points AS sp ON sp.issue_id = i.id
-LEFT JOIN `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_METRICS}.developer_identity` AS di
-  ON di.id_type = 'jira_user_id' AND di.source_id = i.assignee
-WHERE i.resolution IS NOT NULL
-  AND (i._fivetran_deleted IS FALSE OR i._fivetran_deleted IS NULL);
+    SUM(CASE WHEN status = 10005 THEN estimate ELSE 0 END),
+    NULLIF(SUM(estimate), 0)
+  )                                                                     AS accuracy_ratio
+FROM issues_enriched
+WHERE developer IS NOT NULL
+GROUP BY sprint, developer
+ORDER BY sprint, developer;
