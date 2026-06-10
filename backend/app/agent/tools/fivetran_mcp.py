@@ -4,7 +4,7 @@ from app.services.connectors_service import connectors_service
 
 
 async def sync_connector(connector: str) -> dict:
-    """Trigger a Fivetran sync for a connector (github|jira|slack|calendar|pagerduty)."""
+    """Trigger a Fivetran sync for a connector (github|jira|calendar)."""
     return await connectors_service.sync(connector)
 
 

@@ -22,54 +22,8 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-_DEMO_PROPOSALS = [
-    {
-        "id": "prop-demo-001",
-        "status": "pending",
-        "source": "slack",
-        "source_ref": "#dev-alerts thread 2026-06-07",
-        "title": "Add retry logic for GitHub webhook delivery failures",
-        "description": (
-            "**Context:** Thread in #dev-alerts discusses webhook delivery failures under load.\n\n"
-            "Users report intermittent 5xx responses from GitHub's webhook endpoint during peak CI.\n\n"
-            "**Proposed fix:** Implement exponential backoff with jitter for webhook delivery attempts.\n"
-            "Max 5 retries, 30s cap."
-        ),
-        "labels": ["bug", "reliability"],
-        "suggested_assignee": "carol",
-        "confidence": 0.91,
-        "github_issue_url": None,
-        "created_at": "2026-06-07T15:23:00Z",
-    },
-    {
-        "id": "prop-demo-002",
-        "status": "pending",
-        "source": "jira",
-        "source_ref": "SLS-47",
-        "title": "SLS-47: Instrument API latency for P95 alerting",
-        "description": (
-            "**Context:** Jira ticket SLS-47 was never moved to a GitHub issue.\n\n"
-            "The team agreed to add OpenTelemetry spans for all API routes and wire a P95 alert.\n"
-            "This is blocked by the logging refactor in SLS-42 which shipped last sprint."
-        ),
-        "labels": ["observability", "enhancement"],
-        "suggested_assignee": "dave",
-        "confidence": 0.87,
-        "github_issue_url": None,
-        "created_at": "2026-06-08T08:10:00Z",
-    },
-]
-
-
 class BridgeService:
-    def _seed_demo_if_empty(self) -> None:
-        existing = fs_client.get_all("issue_proposals")
-        if not existing:
-            for p in _DEMO_PROPOSALS:
-                fs_client.set("issue_proposals", p["id"], p)
-
     def list_proposals(self, status: str | None = None) -> list[dict]:
-        self._seed_demo_if_empty()
         all_props = fs_client.get_all("issue_proposals")
         if status:
             return [p for p in all_props if p.get("status") == status]

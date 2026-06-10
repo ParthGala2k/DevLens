@@ -4,9 +4,26 @@ Returns empty lists when the project/views aren't available yet (pre-Fivetran se
 All derived views live in settings.bigquery_dataset_metrics.
 """
 
+import datetime
+import decimal
 import logging
 
 log = logging.getLogger(__name__)
+
+
+def _sanitize(row: dict) -> dict:
+    """Convert BQ-native types (datetime, date, Decimal) to JSON-safe equivalents."""
+    out = {}
+    for k, v in row.items():
+        if isinstance(v, datetime.datetime):
+            out[k] = v.isoformat()
+        elif isinstance(v, datetime.date):
+            out[k] = v.isoformat()
+        elif isinstance(v, decimal.Decimal):
+            out[k] = float(v)
+        else:
+            out[k] = v
+    return out
 
 try:
     from google.cloud import bigquery as _bq
@@ -30,7 +47,7 @@ class BigQueryClient:
     def query(self, sql: str) -> list[dict]:
         try:
             client = self._get()
-            return [dict(row) for row in client.query(sql).result()]
+            return [_sanitize(dict(row)) for row in client.query(sql).result()]
         except Exception as exc:
             log.warning("BigQuery query failed: %s", exc)
             return []

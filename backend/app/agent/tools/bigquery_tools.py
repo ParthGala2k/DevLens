@@ -20,11 +20,6 @@ def query_estimation_accuracy() -> list[dict]:
     return metrics_service.estimation_accuracy()
 
 
-def query_oncall_noise() -> list[dict]:
-    """Return on-call incident counts per developer for the last 30 days."""
-    return metrics_service.oncall_noise()
-
-
 def query_developer_load() -> list[dict]:
     """Return per-developer composite load score (issues + points + PRs + on-call + meetings)."""
     return workload_service.load()
@@ -39,7 +34,6 @@ TOOLS = [
     query_pr_review_lag,
     query_deep_work,
     query_estimation_accuracy,
-    query_oncall_noise,
     query_developer_load,
     query_completion_reliability,
 ]

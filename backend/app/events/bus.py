@@ -39,6 +39,47 @@ class EventBus:
             if q in self._queues[channel]:
                 self._queues[channel].remove(q)
 
+    async def subscribe_with_replay(self, channel: str) -> AsyncIterator[Any]:
+        """Subscribe AND replay the ring buffer atomically — no events are missed.
+
+        Registers the live queue first (so future events land in it), then yields
+        the ring buffer snapshot (events already published), then yields the live
+        queue. Because the queue is registered before we snapshot the ring, there
+        is no gap: events published between registration and ring snapshot will
+        appear in both, but since asyncio is single-threaded and no `await` occurs
+        between registration and snapshot, this cannot actually happen.
+        """
+        # Check if the run already completed — if so, just replay the buffer.
+        ring_snapshot = list(self._ring[channel])
+        if any(e.get("type") == "done" for e in ring_snapshot):
+            for event in ring_snapshot:
+                yield event
+                if event.get("type") == "done":
+                    return
+            return
+
+        # Register live queue before snapshotting, so we miss nothing.
+        q: asyncio.Queue = asyncio.Queue(maxsize=200)
+        self._queues[channel].append(q)
+        ring_snapshot = list(self._ring[channel])  # re-snapshot after registration
+
+        try:
+            # 1. Replay already-published events.
+            for event in ring_snapshot:
+                yield event
+                if event.get("type") == "done":
+                    return
+
+            # 2. Yield future events from the live queue.
+            while True:
+                event = await q.get()
+                yield event
+                if event.get("type") == "done":
+                    break
+        finally:
+            if q in self._queues[channel]:
+                self._queues[channel].remove(q)
+
 
 # Process-wide singleton (fine for a single Cloud Run instance / the demo).
 bus = EventBus()
