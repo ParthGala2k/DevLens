@@ -11,7 +11,7 @@
     "detail": { "type": "string" },
     "source": {
       "type": "string",
-      "enum": ["github", "jira", "slack", "calendar", "pagerduty", "cross"]
+      "enum": ["github", "jira", "calendar", "cross"]
     },
     "evidence": {
       "type": "array",

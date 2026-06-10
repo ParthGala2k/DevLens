@@ -7,7 +7,7 @@
   "properties": {
     "id": { "type": "string" },
     "status": { "type": "string", "enum": ["pending", "filed", "dismissed"] },
-    "source": { "type": "string", "enum": ["slack", "jira"] },
+    "source": { "type": "string", "enum": ["jira"] },
     "source_ref": {
       "type": "object",
       "description": "Pointer back to the originating discussion",

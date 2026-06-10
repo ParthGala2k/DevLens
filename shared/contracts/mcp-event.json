@@ -8,7 +8,7 @@
     "server": { "type": "string", "enum": ["fivetran", "github"] },
     "connector": {
       "type": ["string", "null"],
-      "enum": ["github", "jira", "slack", "calendar", "pagerduty", null]
+      "enum": ["github", "jira", "calendar", null]
     },
     "action": { "type": "string", "description": "MCP tool name, e.g. sync_connector or create_issue" },
     "status": { "type": "string", "enum": ["start", "success", "error"] },

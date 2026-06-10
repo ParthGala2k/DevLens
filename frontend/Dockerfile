@@ -1,11 +1,12 @@
-FROM node:20-slim AS deps
-WORKDIR /app
-COPY package.json ./
-RUN npm install
-
 FROM node:20-slim AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+# Build-time variable baked into the client bundle
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
+COPY package.json package-lock.json* ./
+RUN npm ci
 COPY . .
 RUN npm run build
 
