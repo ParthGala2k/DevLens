@@ -1,6 +1,8 @@
 // Minimal fetch wrapper to the backend API.
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+// In dev: set NEXT_PUBLIC_API_BASE_URL=http://localhost:8000.
+// In production (Cloud Run): leave unset — rewrites in next.config.js proxy /api/* to the backend.
+const BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);

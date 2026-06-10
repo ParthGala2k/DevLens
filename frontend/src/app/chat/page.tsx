@@ -10,7 +10,7 @@ export default function ChatPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Ask DevLens</h1>
-          <p className="text-sm text-gray-500">Gemini agent over GitHub, Jira, Slack, Calendar, PagerDuty</p>
+          <p className="text-sm text-gray-500">Gemini agent · GitHub · Jira · Google Calendar · Arjun · Priya · James · Riya</p>
         </div>
       </div>
       <div className="max-w-2xl">
