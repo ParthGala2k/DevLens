@@ -1,19 +1,18 @@
--- Derived view: pull-request review lag.
--- Which GitHub PRs are open, how long they've waited, and who authored them.
--- Author is resolved to a canonical team name via developer_identity.
--- Source: Fivetran github.issue + github.pull_request + github.user + devlens_metrics.developer_identity
+-- Deployed view: pr_review_lag
+-- Synced from BigQuery on 2026-06-11.
 
 CREATE OR REPLACE VIEW `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_METRICS}.pr_review_lag` AS
 SELECT
-  i.number                                                          AS pr_number,
-  i.title                                                           AS title,
-  COALESCE(di.canonical_name, u.login)                             AS author,
-  i.created_at                                                      AS opened_at,
-  TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), i.created_at, HOUR) / 24.0   AS days_open
-FROM `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_GITHUB}.issue` AS i
-JOIN `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_GITHUB}.pull_request` AS pr ON pr.issue_id = i.id
-LEFT JOIN `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_GITHUB}.user` AS u ON u.id = i.user_id
-LEFT JOIN `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_METRICS}.developer_identity` AS di
-  ON di.id_type = 'github_login' AND di.source_id = u.login
-WHERE i.state = 'open'
-  AND i.pull_request = TRUE;
+  st.pr_number                                                          AS pr_number,
+  i.title                                                               AS title,
+  st.persona                                                            AS author,
+  st.pr_opened                                                          AS opened_at,
+  TIMESTAMP_DIFF(TIMESTAMP '2025-06-11 09:00:00-07:00', st.pr_opened, HOUR) / 24.0
+                                                                        AS days_open
+FROM `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_METRICS}.story_time` AS st
+LEFT JOIN `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_GITHUB}.issue` AS i
+  ON i.number = st.pr_number AND i.pull_request = TRUE
+WHERE st.pr_number IS NOT NULL
+  AND st.pr_merged IS NULL          -- still open / awaiting review
+ORDER BY days_open DESC
+;

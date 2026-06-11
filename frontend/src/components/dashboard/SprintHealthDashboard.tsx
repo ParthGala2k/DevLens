@@ -12,7 +12,7 @@ interface PrLagRow {
   pr_number: number;
   title: string;
   author: string;
-  sprint?: string;
+  opened_at?: string;
   days_open: number;
 }
 
@@ -59,7 +59,7 @@ export function SprintHealthDashboard() {
     return day >= sprintStart.slice(0, 10) && day <= sprintEnd.slice(0, 10);
   });
 
-  // Derive sprint label used in estimation rows (e.g. "SLS Sprint 1") by matching sprint number
+  // Derive sprint label used in estimation rows (e.g. "Sprint 1") by matching sprint number
   const selectedSprintNum = selectedSprint?.name.match(/\d+/)?.[0] ?? null;
   const sprintLabel = selectedSprintNum
     ? estimation.find((r) => r.sprint.match(/\d+/)?.[0] === selectedSprintNum)?.sprint ?? null
@@ -250,12 +250,12 @@ export function SprintHealthDashboard() {
               <Tooltip
                 formatter={(v: number, name: string) => [
                   v != null ? `${(v * 100).toFixed(0)}%` : "—",
-                  name.replace("SLS Sprint ", "Sprint "),
+                  name,
                 ]}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e5e7eb" }}
               />
               <Legend
-                formatter={(v) => v.replace("SLS Sprint ", "Sprint ")}
+                formatter={(v) => v}
                 wrapperStyle={{ fontSize: 11 }}
               />
               {/* Green dashed reference line at 1.0 = "on target" */}
