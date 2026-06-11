@@ -1,12 +1,9 @@
--- Derived view: discussion threads that look like undone work (bridge input).
--- Surfaces recent Jira comments that may imply a task or bug, for the agent to
--- classify and (if actionable) draft into a GitHub issue proposal.
--- Slack source is added once the Slack connector is active.
--- Source: Fivetran jira.comment + jira.issue
+-- Deployed view: actionable_threads
+-- Synced from BigQuery on 2026-06-11.
 
 CREATE OR REPLACE VIEW `${BIGQUERY_PROJECT}.${BIGQUERY_DATASET_METRICS}.actionable_threads` AS
 SELECT
-  'jira'                                                                   AS source,
+  '${BIGQUERY_DATASET_JIRA}'                                                                   AS source,
   i.key                                                                    AS thread_id,
   CONCAT('https://sjsu-team-devlens.atlassian.net/browse/', i.key)        AS permalink,
   c.body                                                                   AS text,
@@ -25,4 +22,5 @@ WHERE c.created >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
     OR LOWER(c.body) LIKE '%broken%'
     OR LOWER(c.body) LIKE '%fix%'
     OR LOWER(c.body) LIKE '%issue%'
-  );
+  )
+;
